@@ -14,8 +14,8 @@ class PenjualanDetailSeeder extends Seeder
     public function run(): void
     {
         $data = [
-             // Transaksi Penjualan 1
-             [
+            // Transaksi Penjualan 1
+            [
                 'detail_id' => 1,
                 'penjualan_id' => 1,
                 'barang_id' => 1, // Televisi LED 32"
@@ -245,5 +245,5 @@ class PenjualanDetailSeeder extends Seeder
             ],
         ];
         DB::table('t_penjualan_detail')->insert($data);
-}
+    }
 }
