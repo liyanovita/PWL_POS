@@ -11,6 +11,11 @@ class UserController extends Controller
     public function index()
     {
         // tambah data user dengan Eloquent Model
+        $user = UserModel::findOr(20, ['username', 'nama', function() {
+            abort(404);
+        }]);
+        return view('user', ['data' => $user]);
+
         $data = [
             'username' => 'manager_tiga',
             'nama' => 'Manager 3',
