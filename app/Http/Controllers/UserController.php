@@ -3,59 +3,68 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserModel;
+use Carbon\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
 
 class UserController extends Controller
 {
     public function index()
     {
         $user = UserModel::all();
-        return view('user', ['data' => $user]);
+        return view('user', ['data'=> $user]);
     }
-    public function tambah()
+    public function tambah(): Factory|View
     {
-        return view('user_tambah');
+        return view(view: 'user_tambah');
     }
-    public function tambah_simpan(Request $request)
-    {
 
+    public function tambah_simpan(Request $request): Redirector|RedirectResponse
+    {
         UserModel::create([
             'username' => $request->username,
             'nama' => $request->nama,
-            'password' => Hash::make('$request->password'), // Tanpa tanda kutip di sekitar variabel
+            'password' => Hash::make($request->password), // Hapus tanda kutip di sekitar $request->password
             'level_id' => $request->level_id
+    ]);
 
-        ]);
+    return redirect('/user');
+}
 
-        return redirect('/user');
-    }
-    public function ubah($id) {
+    public function ubah($id): Factory|View
+    {
         $user = UserModel::find($id);
-        return view('user_ubah', ['data' => $user]);
+        return view(view: 'user_ubah', data: ['data' => $user]);
     }
     
-    public function ubah_simpan($id, Request $request) 
+    public function ubah_simpan($id, Request $request): Redirector|RedirectResponse
     {
-        $user = UserModel::find ($id);
+        $user = UserModel::find (id: $id);
 
         $user->username = $request->username;
         $user->nama = $request->nama;
-        $user->password = Hash::make('$request->password'); // Tanpa tanda kutip
+        $user->password = Hash::make(value: $request->password); // Tanpa tanda kutip
         $user->level_id = $request->level_id;
 
         $user->save();
 
-        return redirect('/user');
-}
-    public function hapus($id) {
-        $user = UserModel::find($id);
+        return redirect(to: '/user');
+    }
+
+    public function hapus($id): Redirector|RedirectResponse
+     {
+        $user = UserModel::find(id: $id);
         $user->delete();
 
-        return redirect('/user');
-}
+        return redirect(to: '/user');
+     }
+    }
 
-}
+
         // tambah data user dengan Eloquent Model
         // $user = UserModel::create( [
         //     'username' => 'manager11',
