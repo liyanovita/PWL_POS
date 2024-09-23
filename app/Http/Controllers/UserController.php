@@ -13,10 +13,10 @@ use Illuminate\Support\Facades\Redirect;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(): Factory|View
     {
-        $user = UserModel::all();
-        return view('user', ['data'=> $user]);
+        $user = UserModel::with(relations: 'level')->get();
+        return view(view: 'user', data: ['data' => $user]);
     }
     public function tambah(): Factory|View
     {
