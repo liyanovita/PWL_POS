@@ -11,11 +11,18 @@ class UserController extends Controller
     public function index()
     {
         // tambah data user dengan Eloquent Model
-        //$user = UserModel::where('level_id', 2)->count();
-       // dd($user);
-       // return view('user', ['data' => $user]);
+        $user = UserModel::firstOrNew(
+            [
+                'username' => 'manager33',
+                'nama' => 'Manager Tiga Tiga',
+                'password'=> Hash::make('12345'),
+                'level_id' => 2
+            ],
+        );
+        $user->save();
+        return view('user', ['data' => $user]);
 
-      // $userCount = UserModel::where('level_id', 2)->count();
+        // $userCount = UserModel::where('level_id', 2)->count();
         //return view('user', ['userCount' => $userCount]); prak 2.3
 
         // $data = [
@@ -27,7 +34,7 @@ class UserController extends Controller
         // ];
         // UserModel::create($data); // tambahkan data ke tabel m_user
 
-        // //coba akses mode UserModel
+        //coba akses mode UserModel
         // $user = UserModel::all(); //ambil semua data dari tabel m_user
         // return view('user', ['data' => $user]);
     }
