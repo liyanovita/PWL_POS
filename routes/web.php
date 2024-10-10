@@ -167,7 +167,7 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
     // });
 
     // artinya semua route di dalam group ini harus punya role ADM (Administrator) dan MNG(Manager)
-    Route::middleware(['authorize:ADM,MNG,STF'])->group(function () {
+    Route::middleware(['authorize:ADM,MNG'])->group(function () {
         Route::get('/barang', [BarangController::class, 'index']);          // menampilkan halaman awal barang
         Route::post('/barang/list', [BarangController::class, 'list']);      // menampilkan data barang dalam bentuk json untuk datatables
         Route::get('/barang/create', [BarangController::class, 'create']);   // menampilkan halaman form tambah barang
