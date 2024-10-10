@@ -10,7 +10,7 @@
             <form action="{{ url('kategori')}}" method="POST" class="form-horizontal">
                 @csrf
                 <div class="form-group row">
-                    <label class="col-1 control-label col-form-label">kategori Kode</label>
+                    <label class="col-1 control-label col-form-label">Kategori Kode</label>
                     <div class="col-11">
                         <input type="text" class="form-control" id="kategori_kode" name="kategori_kode" value="{{ old('kategori_kode') }}" required>
                         @error('kategori_kode')
@@ -19,7 +19,7 @@
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label class="col-1 control-label col-form-label">kategori Nama</label>
+                    <label class="col-1 control-label col-form-label">Kategori Nama</label>
                     <div class="col-11">
                         <input type="text" class="form-control" id="kategori_nama" name="kategori_nama" value="{{ old('kategori_nama') }}" required>
                         @error('kategori_nama')
