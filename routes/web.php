@@ -7,7 +7,9 @@ use App\Http\Controllers\LevelController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
+use App\Models\SupplierModel;
 use Illuminate\Support\Facades\Route;
+use Monolog\Level;
 
 /*
 |--------------------------------------------------------------------------
@@ -140,6 +142,7 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
         Route::get('/create_ajax', [UserController::class, 'create_ajax']);   // menampilkan halaman form tambah user
         Route::post('/ajax', [UserController::class, 'store_ajax']);         // menyimpan data user baru
         Route::get('/{id}', [UserController::class, 'show']);       // menampilkan detail user
+        Route::get('/user/{id}/show_ajax', [UserController::class, 'show_ajax']);  
         Route::get('/{id}/edit', [UserController::class, 'edit']);  // menampilkan halaman form edit user
         Route::put('/{id}', [UserController::class, 'update']);     // menyimpan perubahan data user
         Route::get('/{id}/edit_ajax', [UserController::class, 'edit_ajax']);  // menampilkan halaman form edit user
@@ -147,6 +150,10 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
         Route::get('/{id}/delete_ajax', [UserController::class, 'confirm_ajax']);     // menyimpan perubahan data user
         Route::delete('/{id}/delete_ajax', [UserController::class, 'delete_ajax']); // menghapus data user
         Route::delete('/{id}', [UserController::class, 'destroy']); // menghapus data user
+        Route::get('/import', [UserController::class, 'import']);      // ajax form upload excel
+        Route::post('/import_ajax', [UserController::class, 'import_ajax']);       // ajax form import excel
+        // Route::get('/export_excel', [UserController::class, 'export_excel']);       // ajax form export excel
+        // Route::get('/export_pdf', [UserController::class, 'export_pdf']);       // ajax form export pdf
     });
     
     
@@ -163,9 +170,12 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
             Route::get('/level/{id}/delete_ajax', [LevelController::class, 'confirm_ajax']);
             Route::delete('/level/{id}/delete_ajax', [LevelController::class, 'delete_ajax']);
             Route::get('/level/{id}', [LevelController::class, 'show']);       // menampilkan detail level
+            Route::get('/level/{id}/show_ajax', [LevelController::class, 'show_ajax']);  
             Route::get('/level/{id}/edit', [LevelController::class, 'edit']);  // menampilkan halaman form edit level
             Route::put('/level/{id}', [LevelController::class, 'update']);     // menyimpan perubahan data level
             Route::delete('/level/{id}', [LevelController::class, 'destroy']); // menghapus data level
+            Route::get('/level/import', [LevelController::class, 'import']); // ajax form upload excel
+            Route::post('/level/import_ajax', [LevelController::class, 'import_ajax']); // ajax import excel 
         });
     
         // artinya semua route di dalam group ini harus punya role ADM (Administrator) dan MNG(Manager)
@@ -176,7 +186,8 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
             Route::get('/kategori/create_ajax', [KategoriController::class, 'create_ajax']);
             Route::post('/kategori/ajax', [KategoriController::class, 'store_ajax']);
             Route::post('/kategori', [KategoriController::class, 'store']);         // menyimpan data kategori baru
-            Route::get('/kategori/{id}', [KategoriController::class, 'show']);       // menampilkan detail kategori
+            Route::get('/kategori/{id}', [KategoriController::class, 'show']);
+            Route::get('/kategori/{id}/show_ajax', [KategoriController::class, 'show_ajax']);        // menampilkan detail kategori
             Route::get('/kategori/{id}/edit', [KategoriController::class, 'edit']);  // menampilkan halaman form edit kategori
             Route::put('/kategori/{id}', [KategoriController::class, 'update']);     // menyimpan perubahan data kategori
             Route::get('/kategori/{id}/edit_ajax', [KategoriController::class, 'edit_ajax']);
@@ -184,6 +195,10 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
             Route::get('/kategori/{id}/delete_ajax', [KategoriController::class, 'confirm_ajax']);
             Route::delete('/kategori/{id}/delete_ajax', [KategoriController::class, 'delete_ajax']);
             Route::delete('/kategori/{id}', [KategoriController::class, 'destroy']); // menghapus data kategori
+            Route::get('/kategori/import', [KategoriController::class, 'import']); // ajax form upload excel
+            Route::post('/kategori/import_ajax', [KategoriController::class, 'import_ajax']); // ajax import excel 
+            // Route::get('/kategori/export_excel', [KategoriController::class, 'export_excel']); // export excel
+            // Route::get('/kategori/export_pdf', [KategoriController::class, 'export_pdf']); // export pdf
         });
     
         // artinya semua route di dalam group ini harus punya role ADM (Administrator) dan MNG(Manager)
@@ -195,6 +210,7 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
             Route::post('/barang', [BarangController::class, 'store']);         // menyimpan data barang baru
             Route::post('/barang/ajax', [BarangController::class, 'store_ajax']);
             Route::get('/barang/{id}', [BarangController::class, 'show']);       // menampilkan detail barang
+            Route::get('/barang/{id}/show_ajax', [BarangController::class, 'show_ajax']);  
             Route::get('/barang/{id}/edit', [BarangController::class, 'edit']);  // menampilkan halaman form edit barang
             Route::put('/barang/{id}', [BarangController::class, 'update']);     // menyimpan perubahan data barang
             Route::get('/barang/{id}/edit_ajax', [BarangController::class, 'edit_ajax']);
@@ -217,6 +233,7 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
             Route::post('/supplier', [SupplierController::class, 'store']);         // menyimpan data supplier baru
             Route::post('/supplier/ajax', [SupplierController::class, 'store_ajax']);
             Route::get('/supplier/{id}', [SupplierController::class, 'show']);       // menampilkan detail supplier
+            Route::get('/supplier/{id}/show_ajax', [SupplierController::class, 'show_ajax']);  
             Route::get('/supplier/{id}/edit', [SupplierController::class, 'edit']);  // menampilkan halaman form edit supplier
             Route::put('/supplier/{id}', [SupplierController::class, 'update']);     // menyimpan perubahan data supplier
             Route::get('/supplier/{id}/edit_ajax', [SupplierController::class, 'edit_ajax']);
@@ -224,6 +241,8 @@ Route::middleware(['auth'])->group(function () { // artinya semua route di dalam
             Route::get('/supplier/{id}/delete_ajax', [SupplierController::class, 'confirm_ajax']);
             Route::delete('/supplier/{id}/delete_ajax', [SupplierController::class, 'delete_ajax']);
             Route::delete('/supplier/{id}', [SupplierController::class, 'destroy']); // menghapus data supplier
+            Route::get('/supplier/import', [SupplierController::class, 'import']); // ajax form upload excel
+            Route::post('/supplier/import_ajax', [SupplierController::class, 'import_ajax']); // ajax import excel 
         });
 });
 

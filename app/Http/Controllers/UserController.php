@@ -5,9 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\LevelModel;
 use Illuminate\Http\Request;
 use App\Models\UserModel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Monolog\Level;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 // use App\Http\Controllers\DataTables;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -333,5 +338,177 @@ class UserController extends Controller
         }
 
         return redirect('/');
+    }
+
+    public function import()
+    {
+        return view('user.import'); // Ensure you have a corresponding import view
+    }
+
+    public function import_ajax(Request $request)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $rules = [
+                'file_user' => ['required', 'mimes:xlsx', 'max:1024'], // Validate uploaded file
+            ];
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validasi Gagal',
+                    'msgField' => $validator->errors(),
+                ]);
+            }
+
+            $file = $request->file('file_user'); // Get the uploaded file
+
+            $reader = IOFactory::createReader('Xlsx'); // Load the Excel reader
+            $reader->setReadDataOnly(true); // Only read data
+            $spreadsheet = $reader->load($file->getRealPath()); // Load the Excel file
+            $sheet = $spreadsheet->getActiveSheet(); // Get the active sheet
+
+            $data = $sheet->toArray(null, false, true, true); // Get data from Excel
+
+            $insert = [];
+
+            if (count($data) > 1) { // Check if data has more than one row
+                foreach ($data as $row => $value) {
+                    if ($row > 1) { // Skip the first row (header)
+                        $insert[] = [
+                            'level_id' => $value['A'],
+                            'username' => $value['B'],
+                            'nama' => $value['C'],
+                            'password' => bcrypt($value['D']), // Hash the password
+                            'created_at' => now(),
+                        ];
+                    }
+                }
+
+                if (count($insert) > 0) {
+                    // Insert data into the database; ignore existing entries
+                    UserModel::insertOrIgnore($insert);
+                }
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data berhasil diimport',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tidak ada data yang diimport',
+                ]);
+            }
+        }
+
+        return redirect('/');
+    }
+
+    public function export_excel()
+    {
+        // Get user data to export
+        $users = UserModel::select('level_id', 'username', 'nama', 'password')
+            ->orderBy('level_id')
+            ->get();
+
+        // Load library excel
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet(); // Get the active sheet
+
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Level ID');
+        $sheet->setCellValue('C1', 'Username');
+        $sheet->setCellValue('D1', 'Nama');
+        $sheet->setCellValue('E1', 'Password');
+
+        $sheet->getStyle('A1:E1')->getFont()->setBold(true); // Bold header
+
+        $no = 1; // Data number starts from 1
+        $baris = 2; // Data row starts from row 2
+        foreach ($users as $key => $value) {
+            $sheet->setCellValue('A' . $baris, $no);
+            $sheet->setCellValue('B' . $baris, $value->level_id);
+            $sheet->setCellValue('C' . $baris, $value->username);
+            $sheet->setCellValue('D' . $baris, $value->nama);
+            $sheet->setCellValue('E' . $baris, $value->password); // Export password directly, consider hashing in a real application
+            $baris++;
+            $no++;
+        }
+
+        foreach (range('A', 'E') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true); // Auto size columns
+        }
+
+        $sheet->setTitle('Data User'); // Set sheet title
+
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data User ' . date('Y-m-d H:i:s') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+    public function export_pdf()
+    {
+        $users = UserModel::select('user_id', 'level_id', 'username', 'nama', 'password')
+            ->with('level') // Ensure this relationship is defined in UserModel
+            ->orderBy('user_id')
+            ->get();
+
+        // Load the PDF view
+        $pdf = Pdf::loadView('user.export_pdf', ['users' => $users]);
+        $pdf->setPaper('a4', 'portrait'); // Set paper size and orientation
+        $pdf->setOption("isRemoteEnabled", true); // Enable remote images if needed
+        $pdf->render();
+
+        return $pdf->stream('Data User ' . date('Y-m-d H:i:s') . '.pdf');
+    }
+
+    // Menampilkan halaman profil
+    public function showProfile()
+    {
+        $user = Auth::user(); // Mendapatkan user yang sedang login
+        $activeMenu = 'profile'; // Set active menu untuk halaman profile
+
+        $breadcrumb = (object) [
+            'title' => 'Profile',
+            'list' => ['Home']
+        ];
+
+        return view('profile', compact('user', 'activeMenu', 'breadcrumb'));
+    }
+
+    public function uploadProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        // Hapus gambar profil lama jika ada
+        if ($user->profile_picture) {
+            Storage::delete($user->profile_picture);
+        }
+
+        // Simpan gambar baru
+        $path = $request->file('profile_picture')->store('profile_pictures');
+
+        // Update path di database
+        $user->profile_picture = $path;
+        $user->save();
+
+        return redirect()->route('profile')->with('success', 'Profile picture updated successfully.');
     }
 }
