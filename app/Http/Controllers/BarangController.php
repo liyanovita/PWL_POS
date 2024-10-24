@@ -94,13 +94,21 @@ class BarangController extends Controller
           return view('barang.show_ajax', ['barang' => $barang]);
       }
 
-    public function edit_ajax($id)
-    {
-        $barang = BarangModel::find($id);
-        $level = LevelModel::select('level_id', 'level_nama')->get();
-        return view('barang.edit_ajax', ['barang' => $barang, 'level' => $level]);
-    }
-
+      public function edit_ajax($id)
+      {
+          $barang = BarangModel::find($id);
+          if (!$barang) {
+              // Jika barang tidak ditemukan
+              return response()->json([
+                  'status' => false,
+                  'message' => 'Data barang tidak ditemukan.'
+              ]);
+          }
+          $kategori = KategoriModel::all();
+          return view('barang.edit_ajax', ['barang' => $barang, 'kategori' => $kategori]);
+      }
+      
+      
     public function update_ajax(Request $request, $id)
     {
         if ($request->ajax() || $request->wantsJson()) {

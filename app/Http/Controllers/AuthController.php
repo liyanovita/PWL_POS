@@ -7,6 +7,7 @@ use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash; // Untuk hashing password
 
 class AuthController extends Controller
 {
@@ -59,32 +60,41 @@ class AuthController extends Controller
     }
 
     public function store(Request $request)
-    {
-        // cek apakah request berupa ajax
-        if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
-                'level_id'  => 'required|integer',
-                'username'  => 'required|string|min:3|unique:m_user,username',
-                'nama'      => 'required|string|max:100',
-                'password'  => 'required|min:5'
-            ];
-            // use Illuminate\Support\Facades\Validator;
-            $validator = Validator::make($request->all(), $rules);
+{
+    // cek apakah request berupa ajax
+    if ($request->ajax() || $request->wantsJson()) {
+        $rules = [
+            'level_id'  => 'required|integer',
+            'username'  => 'required|string|min:3|unique:m_user,username',
+            'nama'      => 'required|string|max:100',
+            'password'  => 'required|min:5'
+        ];
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'status'    => false, // response status, false: error/gagal, true: berhasil
-                    'message'   => 'Validasi Gagal',
-                    'msgField'  => $validator->errors(), // pesan error validasi
-                ]);
-            }
-            UserModel::create($request->all());
+        // Validasi input
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
             return response()->json([
-                'status'    => true,
-                'message'   => 'Data user berhasil disimpan',
-                'redirect' => url('login')
+                'status'    => false, // response status, false: error/gagal, true: berhasil
+                'message'   => 'Validasi Gagal',
+                'msgField'  => $validator->errors(), // pesan error validasi
             ]);
         }
-        return redirect('login');
+
+        // Buat user baru, hash password terlebih dahulu
+        UserModel::create([
+            'username'  => $request->username,
+            'nama'      => $request->nama,
+            'password'  => Hash::make($request->password), // Hash password
+            'level_id'  => $request->level_id,
+        ]);
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Data user berhasil disimpan',
+            'redirect'  => url('login')
+        ]);
     }
+    return redirect('login');
+}
 }

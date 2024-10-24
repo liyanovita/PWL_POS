@@ -492,21 +492,21 @@ class UserController extends Controller
     public function uploadProfilePicture(Request $request)
     {
         $request->validate([
-            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $user = Auth::user();
 
         // Hapus gambar profil lama jika ada
-        if ($user->profile_picture) {
-            Storage::delete($user->profile_picture);
+        if ($user->avatar) {
+            Storage::delete($user->avatar);
         }
 
         // Simpan gambar baru
-        $path = $request->file('profile_picture')->store('profile_pictures');
+        $path = $request->file('avatar')->store('avatar');
 
         // Update path di database
-        $user->profile_picture = $path;
+        $user->avatar = $path;
         $user->save();
 
         return redirect()->route('profile')->with('success', 'Profile picture updated successfully.');
