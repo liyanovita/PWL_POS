@@ -19,13 +19,12 @@
                     <i class="nav-icon fas fa-tachometer-alt"></i>
                     <p>Dashboard</p>
                 </a>
-            </li> 
-            <li class="nav-item"> 
-              <a href="{{ url('/profile') }}" class="nav-link  {{ ($activeMenu == 'profile')? 'active' : '' }} "> 
-                <i class="nav-icon fas fa-tachometer-alt"></i> 
-                <p>Edit Profile</p> 
-              </a> 
-            </li> 
+                <li class="nav-item"> 
+                    <a href="{{ url('profile') }}" class="nav-link  {{ ($activeMenu == 'profile')? 'active' : '' }} "> 
+                      <i class="nav-icon fas fa-user-tie"></i> 
+                      <p>Profile</p> 
+                    </a>
+                </li>
             </li>
             <li class="nav-header">Data Pengguna</li>
             <li class="nav-item">

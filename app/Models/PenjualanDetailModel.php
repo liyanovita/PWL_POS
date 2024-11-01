@@ -15,7 +15,7 @@ class PenjualanDetailModel extends Model
 
     protected $fillable = ['penjualan_id', 'barang_id', 'harga', 'jumlah'];
 
-    public function penjualan(): BelongsTo 
+    public function penjualan(): BelongsTo
     {
         return $this->belongsTo(PenjualanModel::class, 'penjualan_id', 'penjualan_id');
     }

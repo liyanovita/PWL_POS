@@ -1,133 +1,104 @@
-@empty($penjualan)
-    <div id="modal-master" class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Kesalahan</h5>
-                <button type="button" class="close" data-dismiss="modal" arialabel="Close"><span
-                        aria-hidden="true">&times;</span></button>
+@extends('layouts.template')
+
+@section('content')
+    <div class="card card-outline card-primary">
+        <div class="card-header">
+            <h3 class="card-title">{{ $page->title }}</h3>
+            <div class="card-tools">
+                <a href="{{ url('/penjualan/export_excel') }}" class="btn btn-primary btn-sm mt-1">
+                    <i class="fa fa-file-excel"></i>
+                    <span> Export Penjualan</span>
+                </a>
+                <a href="{{ url('/penjualan/export_pdf') }}" class="btn btn-warning btn-sm mt-1">
+                    <i class="fa fa-file-pdf"></i>
+                    <span> Export Penjualan</span>
+                </a>
+                <button onclick="modalAction('{{ url('penjualan/create_ajax') }}')" class="btn btn-success btn-sm mt-1">
+                    <i class="fa fa-plus"></i>
+                    <span> Tambah Penjualan (Ajax)</span>
+                </button>
             </div>
-            <div class="modal-body">
-                <div class="alert alert-danger">
-                    <h5><i class="icon fas fa-ban"></i> Kesalahan!!!</h5>
-                    Data yang anda cari tidak ditemukan
-                </div>
-                <a href="{{ url('/penjualan') }}" class="btn btn-warning">Kembali</a>
-            </div>
+            
+        </div>
+        <div class="card-body">
+            @if (session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
+            <table class="table table-bordered table-striped table-hover table-sm" id="table_penjualan">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama User</th>
+                        <th>Pembeli</th>
+                        <th>Kode Penjualan</th>
+                        <th>Tanggal Penjualan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
-@else
-    <form action="{{ url('/penjualan/' . $penjualan->penjualan_id . '/update_ajax') }}" method="POST" id="form-edit">
-        @csrf
-        @method('PUT')
-        <div id="modal-master" class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Edit Data Penjualan</h5>
-                    <button type="button" class="close" data-dismiss="modal" arialabel="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Level Pengguna</label>
-                        <select name="user_id" id="user_id" class="form-control" required>
-                            <option value="">- Pilih User -</option>
-                            @foreach ($user as $l)
-                                <option {{ $l->user_id == $penjualan->user_id ? 'selected' : '' }}
-                                    value="{{ $l->user_id }}">{{ $l->nama }}</option>
-                            @endforeach
-                        </select>
-                        <small id="error-level_id" class="error-text form-text textdanger"></small>
-                    </div>
-                    <div class="form-group">
-                        <label>Pembeli</label>
-                        <input value="{{ $penjualan->pembeli }}" type="text" name="pembeli" id="pembeli"
-                            class="form-control" required>
-                        <small id="error-pembeli" class="error-text form-text text-danger"></small>
-                    </div>
-                    <div class="form-group">
-                        <label>Kode Penjualan</label>
-                        <input value="{{ $penjualan->penjualan_kode }}" type="text" name="penjualan_kode"
-                            id="penjualan_kode" class="form-control" required>
-                        <small id="error-penjualan_kode" class="error-text form-text text-danger"></small>
-                    </div>
-                    <div class="form-group">
-                        <label>Tanggal Penjualan</label>
-                        <input value="{{ $penjualan->penjualan_tanggal }}" type="datetime-local" name="penjualan_tanggal" id="penjualan_tanggal"
-                            class="form-control">
-                        <small id="error-penjualan_tanggal" class="error-text form-text text-danger"></small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </div>
-        </div>
-    </form>
+
+    <div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog" databackdrop="static" data-keyboard="false" data-width="75%" aria-hidden="true"></div>
+@endsection
+
+@push('css')
+@endpush
+
+@push('js')
     <script>
+        function modalAction(url = '') {
+            $('#myModal').load(url, function() {
+                $('#myModal').modal('show');
+            });
+        }
+
+        var dataPenjualan;
         $(document).ready(function() {
-            $("#form-edit").validate({
-                rules: {
-                    user_id: {
-                        required: true,
-                        number: true
-                    },
-                    pembeli: {
-                        required: true,
-                        minlength: 3,
-                        maxlength: 50
-                    },
-                    penjualan_kode: {
-                        required: true,
-                        minlength: 3,
-                        maxlength: 20
-                    },
-                    penjualan_tanggal: {
-                        required: true,
-                        date: true
+            dataPenjualan = $('#table_penjualan').DataTable({
+                serverSide: true,
+                ajax: {
+                    "url": "{{ url('penjualan/list') }}",
+                    "dataType": "json",
+                    "type": "POST"
+                },
+                columns: [
+                    {
+                        data: "DT_RowIndex",
+                        className: "text-center",
+                        orderable: false,
+                        searchable: false
+                    }, {
+                        data: "user.nama",
+                        className: "",
+                        orderable: false,
+                        searchable: true
+                    }, {
+                        data: "pembeli",
+                        className: "",
+                        orderable: false,
+                        searchable: true
+                    }, {
+                        data: "penjualan_kode",
+                        className: "",
+                        orderable: true,
+                        searchable: true
+                    }, {
+                        data: "penjualan_tanggal",
+                        className: "",
+                        orderable: true,
+                        searchable: false
+                    }, {
+                        data: "aksi",
+                        className: "",
+                        orderable: false,
+                        searchable: false
                     }
-                },
-                submitHandler: function(form) {
-                    $.ajax({
-                        url: form.action,
-                        type: form.method,
-                        data: $(form).serialize(),
-                        success: function(response) {
-                            if (response.status) {
-                                $('#myModal').modal('hide');
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil',
-                                    text: response.message
-                                });
-                                dataPenjualan.ajax.reload();
-                            } else {
-                                $('.error-text').text('');
-                                $.each(response.msgField, function(prefix, val) {
-                                    $('#error-' + prefix).text(val[0]);
-                                });
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Terjadi Kesalahan',
-                                    text: response.message
-                                });
-                            }
-                        }
-                    });
-                    return false;
-                },
-                errorElement: 'span',
-                errorPlacement: function(error, element) {
-                    error.addClass('invalid-feedback');
-                    element.closest('.form-group').append(error);
-                },
-                highlight: function(element, errorClass, validClass) {
-                    $(element).addClass('is-invalid');
-                },
-                unhighlight: function(element, errorClass, validClass) {
-                    $(element).removeClass('is-invalid');
-                }
+                ]
             });
         });
     </script>
-@endempty
+@endpush

@@ -474,41 +474,67 @@ class UserController extends Controller
 
         return $pdf->stream('Data User ' . date('Y-m-d H:i:s') . '.pdf');
     }
+// public function showProfile()
+//     {
+//         $user = Auth::user(); // Mendapatkan user yang sedang login
+//         $activeMenu = 'profile'; // Set active menu untuk halaman profile
+//         $breadcrumb = (object) [
+//             'title' => 'Profile',
+//             'list' => ['Home']
+//         ];
+//         return view('profile.profile', compact('user', 'activeMenu', 'breadcrumb'));
+//     }
+//     public function uploadProfilePicture(Request $request)
+//     {
+//         $request->validate([
+//             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+//         ]);
+        
+//         $user = Auth::user();
 
-    // Menampilkan halaman profil
-    public function showProfile()
-    {
-        $user = Auth::user(); // Mendapatkan user yang sedang login
-        $activeMenu = 'profile'; // Set active menu untuk halaman profile
+//         // Delete old avatar if exists
+//         if ($user->avatar) {
+//             Storage::delete($user->avatar);
+//         }
 
-        $breadcrumb = (object) [
-            'title' => 'Profile',
-            'list' => ['Home']
-        ];
+//         $path = $request->file('avatar')->store('avatar');
 
-        return view('profile', compact('user', 'activeMenu', 'breadcrumb'));
-    }
+//         // Update path in the database
+//         $user->avatar = $path;
+//         $user->save();
+        
+//         return redirect()->route('profile')->with('success', 'Profile picture updated successfully.');
+//     }
 
-    public function uploadProfilePicture(Request $request)
-    {
-        $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+//     public function updateProfile(Request $request)
+//     {
+//         $request->validate([
+//             'username' => 'required|string|min:3|unique:m_user,username,' . Auth::id() . ',user_id',
+//             'nama'     => 'required|string|max:100',
+//         ]);
 
-        $user = Auth::user();
+//         $user = Auth::user();
+//         $user->update([
+//             'username' => $request->username,
+//             'nama'     => $request->nama,
+//         ]);
 
-        // Hapus gambar profil lama jika ada
-        if ($user->avatar) {
-            Storage::delete($user->avatar);
-        }
+//         return redirect()->route('profile')->with('success', 'Profile updated successfully.');
+//     }
 
-        // Simpan gambar baru
-        $path = $request->file('avatar')->store('avatar');
+//     // Change user password
+//     public function changePassword(Request $request)
+//     {
+//         $request->validate([
+//             'password' => 'required|confirmed|min:6',
+//         ]);
 
-        // Update path di database
-        $user->avatar = $path;
-        $user->save();
+//         $user = Auth::user();
+//         $user->update([
+//             'password' => bcrypt($request->password),
+//         ]);
 
-        return redirect()->route('profile')->with('success', 'Profile picture updated successfully.');
-    }
+//         return redirect()->route('profile')->with('success', 'Password changed successfully.');
+//     }
 }
+    

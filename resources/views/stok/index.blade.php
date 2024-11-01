@@ -93,7 +93,7 @@
                     orderable: false,
                     searchable: true
                 }, {
-                    data: "supplier.supplier_nama",
+                    data: "supplier_nama",
                     className: "",
                     orderable: false,
                     searchable: true
