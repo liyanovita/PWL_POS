@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\BarangController;
 use App\Http\Controllers\Api\KategoriController;
 use App\Http\Controllers\Api\LevelController;
+use App\Http\Controllers\Api\PenjualanController;
 use App\Http\Controllers\Api\UserController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -55,3 +56,6 @@ Route:: get('barangs/{barang}', [BarangController :: class, 'show']);
 Route:: put('barangs/{barang}', [BarangController :: class, 'update']);
 Route:: delete('barangs/{barang}', [BarangController :: class, 'destroy']);
 
+Route::post('/barang', [BarangController::class, 'store']);
+
+Route::post('/penjualan', [PenjualanController::class, 'store']);
